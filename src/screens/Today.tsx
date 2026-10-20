@@ -5,6 +5,7 @@ import { addDays, formatDate } from '../lib/dates';
 import { SEEDS, useCycles } from '../lib/hooks';
 import { sampleData } from '../lib/sample';
 import { isActiveOn } from '../lib/stats';
+import { dateFromHash } from './Calendar';
 import { uid, useStore } from '../lib/store';
 import { KNOWN_SYMPTOMS, SEVERITY_NAMES } from '../lib/symptoms';
 import { emptyEntry, type DayEntry, type Flow, type Severity } from '../lib/types';
@@ -23,7 +24,7 @@ const isEmpty = (e: DayEntry) =>
 export default function Today() {
   const { data, update, replace } = useStore();
   const { cycles, today, cycleLength } = useCycles();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(() => dateFromHash(today));
   const [newSymptom, setNewSymptom] = useState('');
   const [addingSymptom, setAddingSymptom] = useState(false);
   const [extra, setExtra] = useState('');

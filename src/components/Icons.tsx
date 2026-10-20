@@ -56,3 +56,6 @@ export const XIcon = (p: P) => (
 export const SearchIcon = (p: P) => (
   <Svg {...p}><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></Svg>
 );
+export const GridIcon = (p: P) => (
+  <Svg {...p}><rect x="4" y="5" width="16" height="16" rx="3" /><path d="M8 3v4M16 3v4M4 10h16M9 14h.01M12 14h.01M15 14h.01M9 17.5h.01M12 17.5h.01" /></Svg>
+);

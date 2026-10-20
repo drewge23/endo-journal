@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { BookIcon, CalendarIcon, ChartIcon, DropIcon, GearIcon, ListIcon } from './components/Icons';
+import { BookIcon, CalendarIcon, GridIcon, ChartIcon, DropIcon, GearIcon, ListIcon } from './components/Icons';
+import Calendar from './screens/Calendar';
 import Insights from './screens/Insights';
 import Library from './screens/Library';
 import Plan from './screens/Plan';
@@ -7,16 +8,17 @@ import Report from './screens/Report';
 import Settings from './screens/Settings';
 import Today from './screens/Today';
 
-const ROUTES = ['today', 'plan', 'insights', 'library', 'report', 'settings'] as const;
+const ROUTES = ['today', 'calendar', 'plan', 'insights', 'library', 'report', 'settings'] as const;
 export type Route = (typeof ROUTES)[number];
 
 function readRoute(): Route {
-  const r = location.hash.replace(/^#\/?/, '') as Route;
+  const r = location.hash.replace(/^#\/?/, '').split('?')[0] as Route;
   return ROUTES.includes(r) ? r : 'today';
 }
 
 const TABS: { route: Route; label: string; icon: JSX.Element }[] = [
   { route: 'today', label: 'Today', icon: <CalendarIcon /> },
+  { route: 'calendar', label: 'Calendar', icon: <GridIcon /> },
   { route: 'plan', label: 'My plan', icon: <ListIcon /> },
   { route: 'insights', label: 'Insights', icon: <ChartIcon /> },
   { route: 'library', label: 'Library', icon: <BookIcon /> },
@@ -56,6 +58,7 @@ export default function App() {
       </nav>
       <main className="main">
         {route === 'today' && <Today />}
+        {route === 'calendar' && <Calendar />}
         {route === 'plan' && <Plan />}
         {route === 'insights' && <Insights />}
         {route === 'library' && <Library />}

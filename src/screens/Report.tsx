@@ -4,6 +4,7 @@ import { useCycles } from '../lib/hooks';
 import { adherence, compareItem, cycleStats, PAIN_THRESHOLD } from '../lib/stats';
 import { useStore } from '../lib/store';
 import { symptomLabel } from '../lib/symptoms';
+import { byKind } from '../lib/types';
 
 const fmt = (v: number | null) => (v == null ? '–' : v.toFixed(1).replace(/\.0$/, ''));
 
@@ -44,7 +45,7 @@ export default function Report() {
   const total = (id: string) => stats.reduce((sum, s) => sum + (s.symptomDays[id] ?? 0), 0);
   const symptoms = ids.sort((a, b) => total(b) - total(a)).slice(0, 8);
 
-  const treatments = data.plan.filter((p) => p.startDate <= to && (!p.endDate || p.endDate >= from));
+  const treatments = byKind(data.plan).filter((p) => p.startDate <= to && (!p.endDate || p.endDate >= from));
   const sideEffects = data.plan
     .filter((p) => !p.painkiller)
     .map((p) => compareItem(data, cycles, p))

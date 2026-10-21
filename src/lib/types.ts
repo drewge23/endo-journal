@@ -22,6 +22,12 @@ export const KINDS: { id: PlanKind; label: string; one: string }[] = [
   { id: 'holistic', label: 'Holistic', one: 'Holistic' },
 ];
 
+/** Routine items in category order: medications first, then lifestyle, supplements, dietary, holistic. */
+export const byKind = <T extends { kind: PlanKind }>(items: T[]): T[] => {
+  const rank = (k: PlanKind) => KINDS.findIndex((x) => x.id === k);
+  return [...items].sort((a, b) => rank(a.kind) - rank(b.kind));
+};
+
 export interface PlanItem {
   id: string;
   name: string;

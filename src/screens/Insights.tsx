@@ -6,6 +6,7 @@ import { useCycles } from '../lib/hooks';
 import { averagePainByDay, compareItem, cycleStats, PAIN_THRESHOLD, summarize, type Comparison, type Verdict } from '../lib/stats';
 import { useStore } from '../lib/store';
 import { symptomLabel } from '../lib/symptoms';
+import { KINDS } from '../lib/types';
 
 const fmt = (v: number | null, digits = 1) => (v == null ? '–' : v.toFixed(digits).replace(/\.0$/, ''));
 
@@ -120,7 +121,10 @@ export default function Insights() {
           <label className="field">
             Is it helping?
             <select className="select" value={itemId ?? ''} onChange={(e) => setItemId(e.target.value)}>
-              {data.plan.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {KINDS.map((k) => {
+                const list = data.plan.filter((p) => p.kind === k.id);
+                return list.length ? <optgroup key={k.id} label={k.label}>{list.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</optgroup> : null;
+              })}
             </select>
           </label>
           {cmp && <ComparisonView cmp={cmp} />}

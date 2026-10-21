@@ -1,12 +1,27 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { emptyData, type AppData } from './types';
+import { libraryKind } from './library';
+import { emptyData, KINDS, type AppData, type PlanKind } from './types';
 
 const KEY = 'endo-journal:v1';
+
+/** Fills in fields added since a backup was written and maps old routine types. */
+export function normalize(raw: Partial<AppData>): AppData {
+  const data = { ...emptyData(), ...raw };
+  const valid = new Set(KINDS.map((k) => k.id));
+  data.plan = data.plan.map((p) => {
+    if (valid.has(p.kind)) return p;
+    const old = p.kind as string;
+    const kind: PlanKind = libraryKind(p.libraryId) ?? (old === 'habit' ? 'lifestyle' : 'holistic');
+    return { ...p, kind };
+  });
+  data.entries = Object.fromEntries(Object.entries(data.entries).map(([d, e]) => [d, { ...e, energy: e.energy ?? null }]));
+  return data;
+}
 
 function load(): AppData {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...emptyData(), ...JSON.parse(raw) };
+    if (raw) return normalize(JSON.parse(raw));
   } catch {
     // unreadable storage: start fresh
   }
@@ -19,7 +34,7 @@ export function parseBackup(text: string): AppData {
   if (!parsed || parsed.version !== 1 || typeof parsed.entries !== 'object' || !Array.isArray(parsed.plan)) {
     throw new Error('This file is not an Endo Journal backup.');
   }
-  return { ...emptyData(), ...parsed };
+  return normalize(parsed);
 }
 
 type Updater = (fn: (d: AppData) => AppData) => void;

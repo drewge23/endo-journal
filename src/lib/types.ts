@@ -4,6 +4,7 @@ export type Severity = 1 | 2 | 3;
 export interface DayEntry {
   date: string; // YYYY-MM-DD
   pain: number | null; // 0–10
+  energy: number | null; // 0–10
   flow: Flow;
   symptoms: Record<string, Severity>; // symptom id → severity
   done: string[]; // plan item ids taken / done that day
@@ -11,7 +12,15 @@ export interface DayEntry {
   note: string;
 }
 
-export type PlanKind = 'medication' | 'method' | 'habit';
+export type PlanKind = 'medication' | 'lifestyle' | 'supplement' | 'diet' | 'holistic';
+
+export const KINDS: { id: PlanKind; label: string; one: string }[] = [
+  { id: 'medication', label: 'Medications', one: 'Medication' },
+  { id: 'lifestyle', label: 'Lifestyle', one: 'Lifestyle' },
+  { id: 'supplement', label: 'Supplements', one: 'Supplement' },
+  { id: 'diet', label: 'Dietary', one: 'Dietary' },
+  { id: 'holistic', label: 'Holistic', one: 'Holistic' },
+];
 
 export interface PlanItem {
   id: string;
@@ -64,9 +73,19 @@ export const emptyData = (): AppData => ({
 export const emptyEntry = (date: string): DayEntry => ({
   date,
   pain: null,
+  energy: null,
   flow: 'none',
   symptoms: {},
   done: [],
   extras: [],
   note: '',
 });
+
+export const isEmptyEntry = (e: DayEntry) =>
+  e.pain === null &&
+  e.energy === null &&
+  e.flow === 'none' &&
+  !Object.keys(e.symptoms).length &&
+  !e.done.length &&
+  !e.extras.length &&
+  !e.note.trim();

@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { SearchIcon } from '../components/Icons';
+import { KindIcon } from '../components/kinds';
 import { useCycles } from '../lib/hooks';
-import { EVIDENCE, LIBRARY, type Category, type Evidence, type Method } from '../lib/library';
+import { EVIDENCE, LIBRARY, type Evidence, type Method } from '../lib/library';
 import { uid, useStore } from '../lib/store';
+import { KINDS, type PlanKind } from '../lib/types';
 
-const CATEGORIES: (Category | 'All')[] = ['All', 'Medical', 'Diet', 'Body & movement', 'Pain relief'];
 const EV_COLORS: Record<Evidence, string> = {
   guideline: 'var(--good)',
-  some: '#4f8fb8',
-  limited: '#d9a23a',
+  some: 'var(--blue)',
+  limited: 'var(--amber)',
   anecdotal: 'var(--dash)',
 };
 
@@ -16,13 +17,11 @@ export default function Library() {
   const { data, update } = useStore();
   const { today } = useCycles();
   const [q, setQ] = useState('');
-  const [cat, setCat] = useState<Category | 'All'>('All');
+  const [cat, setCat] = useState<PlanKind | 'all'>('all');
 
-  const inPlan = (m: Method) => data.plan.some((p) => p.libraryId === m.id && (!p.endDate || p.endDate >= today));
+  const inRoutine = (m: Method) => data.plan.some((p) => p.libraryId === m.id && (!p.endDate || p.endDate >= today));
   const query = q.trim().toLowerCase();
-  const list = LIBRARY.filter(
-    (m) => (cat === 'All' || m.category === cat) && (!query || `${m.name} ${m.blurb} ${m.category}`.toLowerCase().includes(query)),
-  );
+  const matches = (m: Method) => !query || `${m.name} ${m.blurb} ${m.track} ${m.watch ?? ''}`.toLowerCase().includes(query);
 
   const add = (m: Method) => {
     update((d) => ({
@@ -43,14 +42,18 @@ export default function Library() {
         },
       ],
     }));
-    location.hash = '#/plan';
+    location.hash = '#/routine';
   };
+
+  const groups = KINDS.filter((k) => cat === 'all' || cat === k.id)
+    .map((k) => ({ ...k, list: LIBRARY.filter((m) => m.kind === k.id && matches(m)) }))
+    .filter((g) => g.list.length);
 
   return (
     <div className="page">
       <header className="page-head">
         <div className="stack" style={{ gap: 4 }}>
-          <div className="eyebrow">Things people try for endometriosis</div>
+          <div className="eyebrow">{LIBRARY.length} things people try for endometriosis</div>
           <h1>Library</h1>
         </div>
       </header>
@@ -58,13 +61,13 @@ export default function Library() {
       <div style={{ position: 'relative' }}>
         <label htmlFor="q" className="sr-only">Search methods</label>
         <span style={{ position: 'absolute', left: 14, top: 13, color: 'var(--muted)' }}><SearchIcon size={18} /></span>
-        <input id="q" type="search" className="input" style={{ paddingLeft: 40, background: 'var(--surface)' }} placeholder="Search diet, supplements, therapy…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input id="q" type="search" className="input" style={{ paddingLeft: 40, background: 'var(--surface)' }} placeholder="Search e.g. LED, magnesium, yoga…" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
 
-      <div className="chips" style={{ gap: 6 }}>
-        {CATEGORIES.map((c) => (
-          <button key={c} type="button" className={`chip ${cat === c ? 'on' : ''}`} style={{ minHeight: 38, fontSize: 13 }} aria-pressed={cat === c} onClick={() => setCat(c)}>
-            {c}
+      <div className="chips" style={{ gap: 6 }} role="group" aria-label="Category">
+        {[{ id: 'all' as const, label: 'All' }, ...KINDS].map((c) => (
+          <button key={c.id} type="button" className={`chip ${cat === c.id ? 'on' : ''}`} style={{ minHeight: 38, fontSize: 13 }} aria-pressed={cat === c.id} onClick={() => setCat(c.id)}>
+            {c.label}
           </button>
         ))}
       </div>
@@ -78,29 +81,33 @@ export default function Library() {
         </div>
       </div>
 
-      <div className="stack" style={{ gap: 10 }}>
-        {list.length === 0 && <p className="small muted">No methods match “{q}”.</p>}
-        {list.map((m) => (
-          <article key={m.id} className="method-card">
-            <div className="between" style={{ alignItems: 'flex-start' }}>
-              <div className="stack" style={{ gap: 2 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 700 }}>{m.name}</h2>
-                <div className="tiny muted">{m.category}</div>
+      {groups.length === 0 && <p className="small muted">Nothing matches “{q}”.</p>}
+      {groups.map((g) => (
+        <section key={g.id} className="stack" style={{ gap: 10 }} aria-labelledby={`lh-${g.id}`}>
+          <div className={`kind-head k-${g.id}`} style={{ padding: '6px 2px 0' }}>
+            <span className="kind-icon"><KindIcon kind={g.id} size={18} /></span>
+            <h2 id={`lh-${g.id}`} style={{ flex: 1, fontSize: 14 }}>{g.label}</h2>
+          </div>
+          {g.list.map((m) => (
+            <article key={m.id} className={`method-card k-${m.kind}`}>
+              <div className="between" style={{ alignItems: 'flex-start' }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700 }}>{m.name}</h3>
+                <span className={`tag square ev-${m.evidence}`}>{EVIDENCE[m.evidence].label}</span>
               </div>
-              <span className={`tag square ev-${m.evidence}`}>{EVIDENCE[m.evidence].label}</span>
-            </div>
-            <p>{m.blurb}</p>
-            <div className="between" style={{ alignItems: 'center' }}>
-              <span className="tiny muted">Track: {m.track}</span>
-              {inPlan(m) ? (
-                <a href="#/plan" className="tag square good-tag" style={{ fontSize: 13, padding: '8px 12px', textDecoration: 'none' }}>In my plan</a>
-              ) : (
-                <button type="button" className="btn outline" style={{ minHeight: 38, fontSize: 13 }} onClick={() => add(m)}>Try as experiment</button>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
+              <p>{m.blurb}</p>
+              {m.watch && m.kind === 'medication' && <p className="tiny" style={{ color: 'var(--k-ink)' }}>Common side effects: {m.watch}</p>}
+              <div className="between" style={{ alignItems: 'center' }}>
+                <span className="tiny muted">Track: {m.track}</span>
+                {inRoutine(m) ? (
+                  <a href="#/routine" className="tag square good-tag" style={{ fontSize: 13, padding: '8px 12px', textDecoration: 'none' }}>In my routine</a>
+                ) : (
+                  <button type="button" className="btn outline" style={{ minHeight: 38, fontSize: 13 }} onClick={() => add(m)}>Add to routine</button>
+                )}
+              </div>
+            </article>
+          ))}
+        </section>
+      ))}
 
       <p className="tiny muted" style={{ lineHeight: 1.5 }}>
         This library is for information, not medical advice. Discuss any change in medication, supplements or diet with your doctor.

@@ -7,6 +7,7 @@ export interface CycleStats {
   loggedDays: number;
   avgPain: number | null;
   maxPain: number | null;
+  avgEnergy: number | null;
   painDays: number; // days with pain ≥ 5
   bleedDays: number;
   painkillerDoses: number;
@@ -24,6 +25,8 @@ export function cycleStats(data: AppData, cycle: Cycle): CycleStats {
   let painSum = 0;
   let painN = 0;
   let maxPain: number | null = null;
+  let energySum = 0;
+  let energyN = 0;
   let painDays = 0;
   let bleedDays = 0;
   let doses = 0;
@@ -35,6 +38,10 @@ export function cycleStats(data: AppData, cycle: Cycle): CycleStats {
     if (e.flow === 'light' || e.flow === 'medium' || e.flow === 'heavy') bleedDays++;
     doses += e.done.filter((id) => painkillers.has(id)).length;
     for (const id of Object.keys(e.symptoms)) symptomDays[id] = (symptomDays[id] ?? 0) + 1;
+    if (e.energy != null) {
+      energySum += e.energy;
+      energyN++;
+    }
     if (e.pain === null) return null;
     painSum += e.pain;
     painN++;
@@ -47,6 +54,7 @@ export function cycleStats(data: AppData, cycle: Cycle): CycleStats {
     loggedDays: logged,
     avgPain: painN ? painSum / painN : null,
     maxPain,
+    avgEnergy: energyN ? energySum / energyN : null,
     painDays,
     bleedDays,
     painkillerDoses: doses,
@@ -64,6 +72,7 @@ export function averagePainByDay(stats: CycleStats[], length: number): (number |
 
 export interface Summary {
   avgPain: number | null;
+  avgEnergy: number | null;
   painDays: number | null;
   painkillerDoses: number | null;
   symptomDays: Record<string, number>;
@@ -75,6 +84,7 @@ export function summarize(stats: CycleStats[]): Summary {
   for (const id of ids) symptomDays[id] = mean(stats.map((s) => s.symptomDays[id] ?? 0)) ?? 0;
   return {
     avgPain: mean(stats.map((s) => s.avgPain).filter((v): v is number => v != null)),
+    avgEnergy: mean(stats.map((s) => s.avgEnergy).filter((v): v is number => v != null)),
     painDays: mean(stats.map((s) => s.painDays)),
     painkillerDoses: mean(stats.map((s) => s.painkillerDoses)),
     symptomDays,

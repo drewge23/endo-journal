@@ -97,7 +97,7 @@ export default function Report() {
           <h2>Cycle summary</h2>
           <div className="table-scroll">
             <table>
-              <thead><tr><th>Cycle</th><th>Length</th><th>Bleeding</th><th>Avg pain</th><th>Max pain</th><th>Days pain ≥{PAIN_THRESHOLD}</th><th>Painkiller doses</th><th>Days logged</th></tr></thead>
+              <thead><tr><th>Cycle</th><th>Length</th><th>Bleeding</th><th>Avg pain</th><th>Max pain</th><th>Avg energy</th><th>Days pain ≥{PAIN_THRESHOLD}</th><th>Painkiller doses</th><th>Days logged</th></tr></thead>
               <tbody>
                 {stats.map((s) => (
                   <tr key={s.cycle.start}>
@@ -106,6 +106,7 @@ export default function Report() {
                     <td style={{ whiteSpace: 'nowrap' }}>{s.bleedDays} days</td>
                     <td>{fmt(s.avgPain)}</td>
                     <td>{s.maxPain ?? '–'}</td>
+                    <td>{fmt(s.avgEnergy)}</td>
                     <td>{s.painDays}</td>
                     <td>{s.painkillerDoses}</td>
                     <td>{s.loggedDays}</td>
@@ -168,7 +169,7 @@ export default function Report() {
             </table>
           </section>
           <section className="stack" style={{ gap: 8 }}>
-            <h2>Treatment &amp; self-care</h2>
+            <h2>Routine: treatment &amp; self-care</h2>
             <table>
               <thead><tr><th>What</th><th>Since</th><th>Taken</th></tr></thead>
               <tbody>

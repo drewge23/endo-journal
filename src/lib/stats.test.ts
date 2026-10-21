@@ -69,3 +69,34 @@ describe('stats', () => {
     expect(cmp.confounders.map((p) => p.id)).toContain('antiinf');
   });
 });
+
+describe('normalize', () => {
+  it('maps old routine types and adds energy', async () => {
+    const { normalize } = await import('./store');
+    const d = normalize({
+      version: 1,
+      entries: { '2026-10-01': { date: '2026-10-01', pain: 3, flow: 'none', symptoms: {}, done: [], extras: [], note: '' } as never },
+      plan: [
+        { id: 'a', name: 'Seeds', kind: 'method' as never, detail: '', startDate: '2026-09-01', endDate: null, asNeeded: false, painkiller: false, watch: '', libraryId: 'seed-cycling' },
+        { id: 'b', name: 'Walk', kind: 'habit' as never, detail: '', startDate: '2026-09-01', endDate: null, asNeeded: false, painkiller: false, watch: '' },
+        { id: 'c', name: 'Reiki', kind: 'method' as never, detail: '', startDate: '2026-09-01', endDate: null, asNeeded: false, painkiller: false, watch: '' },
+      ],
+    });
+    expect(d.plan.map((p) => p.kind)).toEqual(['diet', 'lifestyle', 'holistic']);
+    expect(d.entries['2026-10-01'].energy).toBeNull();
+  });
+});
+
+describe('applyToDays', () => {
+  it('merges into existing days and respects routine dates', async () => {
+    const { applyToDays } = await import('./batch');
+    const plan = [{ id: 'm', name: 'Mag', kind: 'supplement' as const, detail: '', startDate: '2026-10-14', endDate: null, asNeeded: false, painkiller: false, watch: '' }];
+    const entries = { '2026-10-12': { ...emptyEntry('2026-10-12'), pain: 7, symptoms: { cramps: 3 as const }, note: 'bad day' } };
+    const draft = { ...emptyEntry(''), energy: 4, symptoms: { bloating: 1 as const }, done: ['m'], note: 'flare week' };
+    const out = applyToDays(entries, ['2026-10-12', '2026-10-13', '2026-10-14'], draft, plan, false);
+    expect(out['2026-10-12']).toMatchObject({ pain: 7, energy: 4, symptoms: { cramps: 3, bloating: 1 }, done: [], note: 'bad day\nflare week' });
+    expect(out['2026-10-14'].done).toEqual(['m']);
+    const replaced = applyToDays(entries, ['2026-10-12'], draft, plan, true);
+    expect(replaced['2026-10-12']).toMatchObject({ pain: null, symptoms: { bloating: 1 }, note: 'flare week' });
+  });
+});

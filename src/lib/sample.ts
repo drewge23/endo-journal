@@ -22,9 +22,11 @@ export function sampleData(today = todayIso()): AppData {
   const plan: PlanItem[] = [
     { id: 'dienogest', name: 'Dienogest 2 mg', kind: 'medication', detail: 'Daily · morning', startDate: addDays(starts[0], -60), endDate: null, asNeeded: false, painkiller: false, watch: 'spotting, mood, headache', libraryId: 'hormonal' },
     { id: 'ibuprofen', name: 'Ibuprofen 400 mg', kind: 'medication', detail: 'As needed, max 3× a day', startDate: addDays(starts[0], -60), endDate: null, asNeeded: true, painkiller: true, watch: 'stomach upset', libraryId: 'nsaid' },
-    { id: 'seeds', name: 'Seed cycling', kind: 'method', detail: '1 tbsp each, ground', startDate: seedStart, endDate: null, asNeeded: false, painkiller: false, watch: 'bloating', libraryId: 'seed-cycling' },
-    { id: 'antiinf', name: 'Anti-inflammatory eating', kind: 'habit', detail: 'Veg, oily fish, legumes, olive oil', startDate: addDays(starts[4], 3), endDate: null, asNeeded: false, painkiller: false, watch: '', libraryId: 'anti-inflammatory' },
-    { id: 'walk', name: 'Gentle movement', kind: 'habit', detail: '20 min walk or yoga', startDate: addDays(starts[0], -30), endDate: null, asNeeded: false, painkiller: false, watch: '', libraryId: 'movement' },
+    { id: 'seeds', name: 'Seed cycling', kind: 'diet', detail: '1 tbsp each, ground', startDate: seedStart, endDate: null, asNeeded: false, painkiller: false, watch: 'bloating', libraryId: 'seed-cycling' },
+    { id: 'antiinf', name: 'Anti-inflammatory eating', kind: 'diet', detail: 'Veg, oily fish, legumes, olive oil', startDate: addDays(starts[4], 3), endDate: null, asNeeded: false, painkiller: false, watch: '', libraryId: 'anti-inflammatory' },
+    { id: 'mag', name: 'Magnesium', kind: 'supplement', detail: 'Evening', startDate: addDays(starts[0], -30), endDate: null, asNeeded: false, painkiller: false, watch: 'diarrhea', libraryId: 'magnesium' },
+    { id: 'tens', name: 'Heat & TENS', kind: 'holistic', detail: 'During flares', startDate: addDays(starts[0], -30), endDate: null, asNeeded: true, painkiller: false, watch: '', libraryId: 'heat-tens' },
+    { id: 'walk', name: 'Gentle movement', kind: 'lifestyle', detail: '20 min walk or yoga', startDate: addDays(starts[0], -30), endDate: null, asNeeded: false, painkiller: false, watch: '', libraryId: 'movement' },
   ];
 
   const basePain = (day: number, len: number) => {
@@ -61,9 +63,13 @@ export function sampleData(today = todayIso()): AppData {
       if (onSeeds && rand() < 0.92) done.push('seeds');
       if (date >= plan[3].startDate && rand() < 0.7) done.push('antiinf');
       if (rand() < 0.6) done.push('walk');
+      if (rand() < 0.8) done.push('mag');
+      if (pain >= 5 && rand() < 0.6) done.push('tens');
+      if (day > 8 && rand() < (c >= 4 ? 0.12 : 0.03)) symptoms['breast-tenderness'] = 1;
       entries[date] = {
         date,
         pain,
+        energy: Math.max(0, Math.min(10, Math.round(8 - pain * 0.6 - (symptoms['fatigue'] ? 2 : 0) + (rand() - 0.5) * 2))),
         flow: day <= 5 ? flows[day - 1] : symptoms['spotting'] ? 'spotting' : 'none',
         symptoms,
         done,

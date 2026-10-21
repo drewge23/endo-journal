@@ -92,7 +92,7 @@ export default function Settings() {
         <p className="small muted">Fill the app with five months of made-up entries to see how Insights and the report work.</p>
         <div className="row wrap">
           <button type="button" className="btn" onClick={() => { if (!hasData || confirm('This replaces your current data. Continue?')) replace(sampleData()); }}>Load sample data</button>
-          <button type="button" className="btn danger" onClick={() => { if (confirm('Delete all entries, your plan and settings from this device? This cannot be undone.')) replace(emptyData()); }}>Delete all data</button>
+          <button type="button" className="btn danger" onClick={() => { if (confirm('Delete all entries, your routine and settings from this device? This cannot be undone.')) replace(emptyData()); }}>Delete all data</button>
         </div>
       </section>
     </div>

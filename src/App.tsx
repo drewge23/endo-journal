@@ -3,23 +3,24 @@ import { BookIcon, CalendarIcon, GridIcon, ChartIcon, DropIcon, GearIcon, ListIc
 import Calendar from './screens/Calendar';
 import Insights from './screens/Insights';
 import Library from './screens/Library';
-import Plan from './screens/Plan';
 import Report from './screens/Report';
+import Routine from './screens/Routine';
 import Settings from './screens/Settings';
 import Today from './screens/Today';
 
-const ROUTES = ['today', 'calendar', 'plan', 'insights', 'library', 'report', 'settings'] as const;
+const ROUTES = ['today', 'calendar', 'routine', 'insights', 'library', 'report', 'settings'] as const;
 export type Route = (typeof ROUTES)[number];
 
 function readRoute(): Route {
-  const r = location.hash.replace(/^#\/?/, '').split('?')[0] as Route;
-  return ROUTES.includes(r) ? r : 'today';
+  let r = location.hash.replace(/^#\/?/, '').split('?')[0];
+  if (r === 'plan') r = 'routine'; // old links
+  return (ROUTES as readonly string[]).includes(r) ? (r as Route) : 'today';
 }
 
 const TABS: { route: Route; label: string; icon: JSX.Element }[] = [
   { route: 'today', label: 'Today', icon: <CalendarIcon /> },
   { route: 'calendar', label: 'Calendar', icon: <GridIcon /> },
-  { route: 'plan', label: 'My plan', icon: <ListIcon /> },
+  { route: 'routine', label: 'My routine', icon: <ListIcon /> },
   { route: 'insights', label: 'Insights', icon: <ChartIcon /> },
   { route: 'library', label: 'Library', icon: <BookIcon /> },
 ];
@@ -59,7 +60,7 @@ export default function App() {
       <main className="main">
         {route === 'today' && <Today />}
         {route === 'calendar' && <Calendar />}
-        {route === 'plan' && <Plan />}
+        {route === 'routine' && <Routine />}
         {route === 'insights' && <Insights />}
         {route === 'library' && <Library />}
         {route === 'report' && <Report />}

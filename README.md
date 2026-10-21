@@ -16,7 +16,7 @@ npm run build    # static site in dist/
 ## Structure
 
 - `src/lib/` — data model (`types.ts`), cycle detection and phases (`cycle.ts`), monthly stats and before/after comparisons (`stats.ts`), method library content (`library.ts`), sample data
-- `src/screens/` — Today, My plan, Insights, Library, Doctor report, Settings
+- `src/screens/` — Today, Calendar, My routine, Insights, Library, Doctor report, Settings
 
 ## Install on a phone
 

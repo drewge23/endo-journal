@@ -25,7 +25,7 @@ export default function Insights() {
   const [itemId, setItemId] = useState<string | null>(() => {
     const f = readFocus();
     if (f && data.plan.some((p) => p.id === f)) return f;
-    return (data.plan.find((p) => p.kind === 'method') ?? data.plan.find((p) => !p.asNeeded) ?? data.plan[0])?.id ?? null;
+    return (data.plan.find((p) => p.kind !== 'medication' && !p.asNeeded) ?? data.plan.find((p) => !p.asNeeded) ?? data.plan[0])?.id ?? null;
   });
 
   const cycle: Cycle | undefined = cycles[idx];
@@ -64,6 +64,7 @@ export default function Insights() {
   const kpis = [
     { label: 'Avg pain', value: fmt(stats.avgPain), prev: prevSummary.avgPain, cur: stats.avgPain },
     { label: `Pain days ≥${PAIN_THRESHOLD}`, value: String(stats.painDays), prev: prevSummary.painDays, cur: stats.painDays },
+    { label: 'Avg energy', value: fmt(stats.avgEnergy), prev: prevSummary.avgEnergy, cur: stats.avgEnergy, higherBetter: true },
     { label: 'Painkillers', value: String(stats.painkillerDoses), prev: prevSummary.painkillerDoses, cur: stats.painkillerDoses },
   ];
 
@@ -82,14 +83,15 @@ export default function Insights() {
         </div>
       </header>
 
-      <div className="grid3">
+      <div className="grid2 kpis">
         {kpis.map((k) => {
           const delta = k.prev != null && k.cur != null ? k.cur - k.prev : null;
+          const better = delta == null || delta === 0 ? null : k.higherBetter ? delta > 0 : delta < 0;
           return (
             <div key={k.label} className="kpi">
               <div className="tiny muted" style={{ fontWeight: 600 }}>{k.label}</div>
               <div className="v num">{k.value}</div>
-              <div className={`d ${delta == null ? '' : delta < 0 ? 'good' : delta > 0 ? 'bad' : ''}`}>
+              <div className={`d ${better == null ? '' : better ? 'good' : 'bad'}`}>
                 {delta == null ? <span className="muted">no earlier data</span> : delta === 0 ? 'same as before' : `${delta < 0 ? '↓' : '↑'} ${fmt(Math.abs(delta))} vs before`}
               </div>
             </div>
@@ -204,6 +206,7 @@ function ComparisonView({ cmp }: { cmp: Comparison }) {
 
   const rows = [
     { label: 'Avg pain', b: b.avgPain ?? 0, a: a.avgPain ?? 0 },
+    ...(b.avgEnergy != null && a.avgEnergy != null ? [{ label: 'Avg energy', b: b.avgEnergy, a: a.avgEnergy, higherBetter: true }] : []),
     { label: `Days pain ≥${PAIN_THRESHOLD}`, b: b.painDays ?? 0, a: a.painDays ?? 0 },
     ...(cmp.item.painkiller ? [] : [{ label: 'Painkiller doses', b: b.painkillerDoses ?? 0, a: a.painkillerDoses ?? 0 }]),
     ...cmp.symptoms.slice(0, 4).map((s) => ({ label: symptomLabel(s.id, data.customSymptoms), b: s.before, a: s.after })),
@@ -219,6 +222,7 @@ function ComparisonView({ cmp }: { cmp: Comparison }) {
         {rows.map((r) => {
           const max = Math.max(r.a, r.b, 0.01);
           const pct = r.b ? Math.round(((r.a - r.b) / r.b) * 100) : null;
+          const good = pct == null || pct === 0 ? null : 'higherBetter' in r && r.higherBetter ? pct > 0 : pct < 0;
           return (
             <div key={r.label} className="cmp-row">
               <div className="small" style={{ fontWeight: 600 }}>{r.label}</div>
@@ -226,7 +230,7 @@ function ComparisonView({ cmp }: { cmp: Comparison }) {
                 <div className="bar-track"><div style={{ width: `${(r.b / max) * 100}%`, background: 'var(--chart-before)' }} /></div>
                 <div className="bar-track"><div style={{ width: `${(r.a / max) * 100}%`, background: 'var(--good)' }} /></div>
               </div>
-              <div className="small num" style={{ fontWeight: 800, textAlign: 'right', color: pct == null || pct === 0 ? 'var(--muted)' : pct < 0 ? 'var(--good-ink)' : 'var(--warn-ink)' }}>
+              <div className="small num" style={{ fontWeight: 800, textAlign: 'right', color: good == null ? 'var(--muted)' : good ? 'var(--good-ink)' : 'var(--warn-ink)' }}>
                 {pct == null ? (r.a ? 'new' : '–') : `${pct > 0 ? '+' : pct < 0 ? '−' : ''}${Math.abs(pct)}%`}
               </div>
             </div>

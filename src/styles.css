@@ -24,6 +24,9 @@
   --amber-ink: #7a5a00;
   --blue-tint: #e3eef6;
   --blue-ink: #1f4e6e;
+  --blue: #2f6e9a;
+  --amber: #a86a12;
+  --purple: #5b4fa0;
   --sev1: #e9cfe0;
   --sev1-ink: #4a1e3d;
   --sev2: #b9659c;
@@ -61,6 +64,9 @@
     --amber-ink: #f0d184;
     --blue-tint: #1b2d3b;
     --blue-ink: #a9cfeb;
+    --blue: #7fb6dc;
+    --amber: #e0b45c;
+    --purple: #a99ff0;
     --sev1: #5a3550;
     --sev1-ink: #f7dcee;
     --sev2: #a9568c;
@@ -304,3 +310,49 @@ a.cal-cell:hover { color: var(--ink); filter: brightness(0.97); }
 .cal-cell.p2 .cal-drop, .cal-cell.p3 .cal-drop { color: inherit; }
 .cal-dot { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--good); display: inline-block; }
 .cal-cell.p2 .cal-dot, .cal-cell.p3 .cal-dot { background: currentColor; }
+
+/* Routine categories */
+.k-medication { --k-tint: var(--accent-tint); --k-ink: var(--accent-tint-ink); --k-solid: var(--accent); }
+.k-lifestyle { --k-tint: var(--good-tint); --k-ink: var(--good-ink); --k-solid: var(--good); }
+.k-supplement { --k-tint: var(--blue-tint); --k-ink: var(--blue-ink); --k-solid: var(--blue); }
+.k-diet { --k-tint: var(--amber-tint); --k-ink: var(--amber-ink); --k-solid: var(--amber); }
+.k-holistic { --k-tint: var(--habit-tint); --k-ink: var(--habit-ink); --k-solid: var(--purple); }
+.tag.kind { background: var(--k-tint); color: var(--k-ink); }
+.kind-head { display: flex; align-items: center; gap: 8px; color: var(--k-ink); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.kind-head h2 { color: var(--k-ink); text-transform: none; letter-spacing: 0; font-weight: 800; }
+.kind-icon { width: 30px; height: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; background: var(--k-solid); color: var(--surface); flex-shrink: 0; }
+.kind-block { background: var(--k-tint); border-radius: 16px; padding: 10px 12px 2px; }
+.kind-block .kind-head { padding: 2px 2px 4px; }
+.kind-block .plan-row { border-bottom: 1px solid color-mix(in srgb, var(--k-solid) 18%, transparent); }
+.kind-block .plan-row:last-child { border-bottom: 0; }
+.kind-block .box { background: var(--surface); border-color: color-mix(in srgb, var(--k-solid) 55%, var(--surface)); }
+.kind-block .box.done { background: var(--k-solid); border-color: transparent; color: var(--surface); }
+.kind-card { background: var(--k-tint); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.kind-card .item { background: var(--surface); border-radius: 14px; padding: 12px 14px; }
+.kind-card .week span.on { background: var(--k-solid); }
+.kind-card .seed-box.now { background: var(--k-tint); border-color: var(--k-solid); }
+.method-card .tag.square { flex-shrink: 0; }
+.linklike { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; font-weight: 600; }
+.kpis .kpi .v { font-size: 24px; }
+
+/* Collapsible block under Symptoms */
+.subblock { border-radius: 14px; background: var(--ground); padding: 0 12px; }
+.subblock summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; font-weight: 700; font-size: 14px; list-style: none; }
+.subblock summary::-webkit-details-marker { display: none; }
+.subblock summary::after { content: ''; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); margin: -4px 4px 0 0; flex-shrink: 0; transition: transform 0.15s; }
+.subblock[open] summary::after { transform: rotate(-135deg); margin-top: 4px; }
+.subblock summary > span:first-child { flex: 1; }
+.subblock[open] { padding-bottom: 12px; }
+
+/* Calendar selection */
+button.cal-cell { width: 100%; padding: 0; font: inherit; font-size: 14px; font-weight: 600; }
+.cal-cell.selected { outline: 3px solid var(--accent); outline-offset: -3px; }
+.cal-cell.anchor { outline-style: dashed; }
+.cal-check { position: absolute; top: 3px; left: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; }
+.selbar {
+  position: sticky; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 5;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  background: var(--surface); border-radius: 16px; padding: 10px 12px; box-shadow: 0 6px 24px rgba(30, 26, 34, 0.18);
+}
+@media (min-width: 900px) { .selbar { bottom: 16px; } }
+.method-card p.tiny { font-size: 12px; }
